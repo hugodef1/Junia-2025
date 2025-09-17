@@ -1,15 +1,21 @@
-FROM nginx:alpine
+# Utilise une image de base avec PHP et un serveur web (FPM)
+FROM php:7.4-fpm-alpine
 
-# Supprimer le site par défaut
-RUN rm -rf /usr/share/nginx/html/*
+# Installe Nginx et les dépendances nécessaires
+RUN apk add --no-cache nginx
 
-# Copier le code source de votre projet (le point . représente la racine du projet)
-COPY . /usr/share/nginx/html/
+# Configure Nginx pour servir les fichiers PHP
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Ajuster les permissions
-RUN chown -R nginx:nginx /usr/share/nginx/html \
-    && chmod -R 755 /usr/share/nginx/html
+# Supprime le contenu par défaut et copie votre code source
+RUN rm -rf /var/www/html/*
+COPY . /var/www/html/
 
+# Définit les permissions pour le serveur web
+RUN chown -R www-data:www-data /var/www/html
+
+# Expose le port 80 pour le serveur Nginx
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Lance PHP-FPM et Nginx
+CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
