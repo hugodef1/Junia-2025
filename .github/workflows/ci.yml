@@ -1,0 +1,45 @@
+build:
+    runs-on: self-hosted
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t app .
+push:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push Docker Image
+        run: |
+          docker tag app:latest ton_utilisateur/app:latest
+          docker push ton_utilisateur/app:latest
+deploy:
+    runs-on: self-hosted
+    needs: push
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "Connexion SSH réussie, début du déploiement..."
+            # Met à jour le code si nécessaire
+            cd ~/Junia-2025
+            git pull
+
+            # Récupère la dernière image et relance les conteneurs
+            docker-compose pull
+            docker-compose up -d --force-recreate
+
+            echo "Déploiement terminé !"
