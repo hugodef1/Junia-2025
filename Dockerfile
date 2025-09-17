@@ -1,14 +1,15 @@
-# Utiliser l'image officielle de nginx comme base
 FROM nginx:alpine
 
-# Supprimer la configuration par défaut
+# Supprimer le site par défaut
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copier le code source du projet dans le répertoire web de nginx
-COPY . /usr/share/nginx/html
+# Copier le dossier généré par Hugo
+COPY public/ /usr/share/nginx/html/
 
-# Exposer le port 80
+# Ajuster les permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html \
+    && chmod -R 755 /usr/share/nginx/html
+
 EXPOSE 80
 
-# Lancer nginx
 CMD ["nginx", "-g", "daemon off;"]

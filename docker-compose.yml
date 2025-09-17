@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  # Service pour le serveur web et l'application
+  app:
+    image: localhost:5000/app:1.0
+    container_name: nginx-junia
+    ports:
+      # Expose le port 80 du conteneur sur un port aléatoire de l'hôte
+      - "80"
+    volumes:
+      # Lie le code source de ton projet au conteneur
+      - ./Junia-2025:/var/www/html
+    networks:
+      - segregated-network
+    depends_on:
+      - mysql
+
+  # Service pour la base de données
+  mysql:
+    image: localhost:5000/mysql:1.0
+    container_name: mysql-junia
+    environment:
+      # Utilise la variable d'environnement pour le mot de passe root
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      # Expose le port 3306 du conteneur sur le port 3306 de l'hôte
+      - "3306:3306"
+    volumes:
+      # Volume persistant pour les données de la base de données
+      - mysql_data:/var/lib/mysql
+    networks:
+      - segregated-network
+
+networks:
+  # Définition du réseau
+  segregated-network:
+    driver: bridge
+
+volumes:
+  # Définition du volume de données
+  mysql_data:
