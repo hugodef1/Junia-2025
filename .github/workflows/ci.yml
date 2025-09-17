@@ -1,4 +1,22 @@
-build:
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs: # <-- Le mot-clé "jobs" doit être au-dessus de la liste de tous tes jobs
+  lint: # <-- Ce job doit être indenté
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: PHP Linting
+        run: |
+          find . -name "*.php" -print0 | xargs -0 -n1 php -l
+
+  build: # <-- Ce job doit être au même niveau d'indentation que "lint"
     runs-on: self-hosted
     needs: lint
     steps:
@@ -8,7 +26,8 @@ build:
       - name: Build Docker Image
         run: |
           docker build -t app .
-push:
+
+  push: # <-- Ce job aussi
     runs-on: self-hosted
     needs: build
     steps:
@@ -22,7 +41,8 @@ push:
         run: |
           docker tag app:latest ton_utilisateur/app:latest
           docker push ton_utilisateur/app:latest
-deploy:
+
+  deploy: # <-- Et celui-ci également
     runs-on: self-hosted
     needs: push
     steps:
@@ -34,12 +54,8 @@ deploy:
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo "Connexion SSH réussie, début du déploiement..."
-            # Met à jour le code si nécessaire
             cd ~/Junia-2025
             git pull
-
-            # Récupère la dernière image et relance les conteneurs
             docker-compose pull
             docker-compose up -d --force-recreate
-
             echo "Déploiement terminé !"
