@@ -5,8 +5,8 @@ on:
     branches:
       - develop
 
-jobs: # <-- Le mot-clé "jobs" doit être au-dessus de la liste de tous tes jobs
-  lint: # <-- Ce job doit être indenté
+jobs:
+  lint:
     runs-on: self-hosted
     steps:
       - name: Checkout code
@@ -16,7 +16,7 @@ jobs: # <-- Le mot-clé "jobs" doit être au-dessus de la liste de tous tes jobs
         run: |
           find . -name "*.php" -print0 | xargs -0 -n1 php -l
 
-  build: # <-- Ce job doit être au même niveau d'indentation que "lint"
+  build:
     runs-on: self-hosted
     needs: lint
     steps:
@@ -27,7 +27,7 @@ jobs: # <-- Le mot-clé "jobs" doit être au-dessus de la liste de tous tes jobs
         run: |
           docker build -t app .
 
-  push: # <-- Ce job aussi
+  push:
     runs-on: self-hosted
     needs: build
     steps:
@@ -39,10 +39,10 @@ jobs: # <-- Le mot-clé "jobs" doit être au-dessus de la liste de tous tes jobs
 
       - name: Push Docker Image
         run: |
-          docker tag app:latest ton_utilisateur/app:latest
-          docker push ton_utilisateur/app:latest
+          docker tag app:latest hugodef1/app:latest
+          docker push hugodef1/app:latest
 
-  deploy: # <-- Et celui-ci également
+  deploy:
     runs-on: self-hosted
     needs: push
     steps:
