@@ -1,42 +1,30 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  # Service pour le serveur web et l'application
   app:
-    image: localhost:5000/app:1.0
-    container_name: nginx-junia
+    image: hugodef1/app:latest
+    container_name: app
     ports:
-      # Expose le port 80 du conteneur sur un port aléatoire de l'hôte
-      - "80"
-    volumes:
-      # Lie le code source de ton projet au conteneur
-      - ./Junia-2025:/var/www/html
+      - "80:80"
     networks:
       - segregated-network
     depends_on:
       - mysql
 
-  # Service pour la base de données
   mysql:
-    image: localhost:5000/mysql:1.0
+    image: mysql:latest
     container_name: mysql-junia
+    restart: always
     environment:
-      # Utilise la variable d'environnement pour le mot de passe root
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    ports:
-      # Expose le port 3306 du conteneur sur le port 3306 de l'hôte
-      - "3306:3306"
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
-      # Volume persistant pour les données de la base de données
-      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - segregated-network
 
 networks:
-  # Définition du réseau
   segregated-network:
     driver: bridge
-
-volumes:
-  # Définition du volume de données
-  mysql_data:
